@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+var wordlist = {};
+var userCount = {};
+var wordlistbyuser = {};
+var totalCount = 0;
+
+$(document).ready(function(){
+
+	// var Days = 2; //此 cookie 将被保存 2 天
+ //    var exp  = new Date();    //new Date("December 31, 9998");
+ //    exp.setTime(exp.getTime() + Days*24*60*60*1000);
+	// document.cookie = "wordlist=1;expires=" + exp.toGMTString();
+
+	var userlist = ["Eklan@萩","阿巧","大頭狗","実(´・ω・`)","陳小艾","Booli","Chang Ламм","ChingZ","Devon Chen","Erin アキ","Evan よう","Kimi Kuo","KIRA","Kris.H","Maddie","Spider","5417","宥蓉"]
+
+	var kanaArr = {"ア":"アあ","イ":"イい","ウ":"ウう","エ":"エえ","オ":"オお","カ":"カガかが","キ":"キギきぎ","ク":"クグくぐ","ケ":"ケゲけげ","コ":"コゴこご","サ":"サザさざ","シ":"シジしじ","ス":"スズすず","セ":"セゼせぜ","ソ":"ソゾそぞ","タ":"タダただ","チ":"チヂちぢ","ツ":"ツヅつづ","テ":"テデてで","ト":"トドとど","ナ":"ナな","ニ":"ニに","ヌ":"ヌぬ","ネ":"ネね","ノ":"ノの","ハ":"ハパバはぱば","ヒ":"ヒピビひぴび","フ":"フプブふぷぶ","ヘ":"ヘペベへぺべ","ホ":"ホポボほぽぼ","マ":"マま","ミ":"ミみ","ム":"ムむ","メ":"メめ","モ":"モも","ヤ":"ヤや","ユ":"ユゆ","ヨ":"ヨよ","ラ":"ラら","リ":"リり","ル":"ルる","レ":"レれ","ロ":"ロろ","ワ":"ワわ","ヲ":"ヲを","ン":"ンん"};
+	
+	
+
+	// //get coockie
+	// var coockielist = document.cookie.split(';');
+	// for(var k = 0 ; k < coockielist.length ; k++){
+	// 	var item = coockielist[k].split('=');
+	// }
+
+	//get data
+	$.getJSON('https://spreadsheets.google.com/feeds/list/1ZTM6YjIT_Tu8YxuruCzrS4jrHOyDx-NSHdvwGxdWdLM/od6/public/values?alt=json', function (data){
+		var entrylength = data.feed.entry.length;
+		//wordlist = JSON.parse(data.feed.entry[entrylength-1].gsx$wordlist.$t);
+		//userCount = JSON.parse(data.feed.entry[entrylength-1].gsx$usercount.$t);
+		//wordlistbyuser = JSON.parse(data.feed.entry[entrylength-1].gsx$wordlistbyuser.$t);
+		//totalCount = JSON.parse(data.feed.entry[entrylength-1].gsx$totalcount.$t);
+		//updateTable(userlist, userCount, wordlistbyuser, wordlist);
+    });
+
+	$.getJSON('https://spreadsheets.google.com/feeds/list/1gVL2c3WZq9RuAPGLQPu4Mf0UOh-eKgdtOvxqhhx7_7w/od6/public/values?alt=json', function (data){
+		var entrylength = data.feed.entry.length;
+		var entryArr = data.feed.entry;
+		var username = "";	//current user
+		for(var i = 0 ; i<entrylength ; i++){	//every row\
+			if(entryArr[i].gsx$namecountwords.$t != ""){
+				username = entryArr[i].gsx$namecountwords.$t;
+			}
+			$.each(entryArr[i], function(index, value){	//every col
+				if(index.search("gsx") != -1 && index != "gsx$namecountwords"){
+					var word = value.$t;
+					userCount[username] = userCount[username] + 1;
+					wordlistbyuser[username].push("【" + word + "】");
+
+					$.each(kanaArr, function(kanaid, kanaval) {
+						var wordArr = wordlist[kanaid].wordArr;
+						if(kanaval.search(word.charAt(0)) != -1 && $.inArray(word, wordArr) == -1){	
+							wordlist[kanaid].wordArr.push("【" + word + "】");
+							wordlist[kanaid].count++;
+						}
+					});
+					
+					totalCount++;
+				}
+			});
+		}
+		updateTable(userlist, userCount, wordlistbyuser, wordlist, totalCount);
+    });
+
+
+    
+	var tablecolor = ["primary","success","danger","warning","info","primary","success","danger","warning","info"];
+
+	for(var i = 0 ; i < userlist.length ; i++){
+		userCount[userlist[i]] = 0;	
+		wordlistbyuser[userlist[i]] = [];
+		$("#tbusercnt").append($("<tr></tr>")
+							.append("<th>" + userlist[i] + "</th>")	//name
+							.append("<td id='usercnt_" + i + "'>0</td>") //count
+							.append("<td id='userword_"+ i + "'></td>")	//word
+							);
+		$("#user").append($("<option></option>").val(userlist[i]).text(userlist[i]));
+	}
+
+	var wordlistid = 0;
+	$.each(kanaArr, function(index, value) {
+		wordlist[index] = {"id":wordlistid, "wordArr":[], "count":0};
+		var tr = $("<tr></tr>");
+		if(wordlistid/5 <= 7){
+			$(tr).addClass("table-" + tablecolor[wordlistid/5]);
+		}
+		else if(wordlistid == 38 || wordlistid == 43){
+			$(tr).addClass("table-" + tablecolor[(wordlistid+2)/5]);
+		}
+		$("#tbwordlist").append($(tr)
+							.append("<th>" + index + "</th>")	//index
+							.append("<td id='wordlist_" + wordlistid + "'></td>")	//word
+							.append("<td id='wordcnt_" + wordlistid + "'>0</td>")	//word count
+							);
+		wordlistid++;
+	});
+
+
+	var data = {};
+	$("#submit").click(function(){
+		var username = $("#user").val();
+		var sendword = $("#word").val();
+		if($("#chtword").val() != "")
+			sendword = sendword + "(" + $("#chtword").val() + ")";
+		var userid = userlist.indexOf(username);
+		if(username != "" && userid !=-1 && sendword != ""){
+			var iscorrect = false;
+			$.each(kanaArr, function(index, value) {
+				var wordArr = wordlist[index].wordArr;
+				if(value.search(sendword.charAt(0)) != -1 && $.inArray(sendword, wordArr)){
+					iscorrect = true;
+					totalCount++;
+					//update user table
+					userCount[username] = userCount[username] + 1;
+					wordlistbyuser[username].push(sendword);
+					$("#usercnt_" + userid).text(userCount[username]);
+					$("#userword_" + userid).text(JSON.stringify(wordlistbyuser[username]));
+					//update word table
+					wordlist[index].wordArr.push(sendword);
+					wordlist[index].count++;
+					var wlid = wordlist[index].id;
+					$("#wordlist_" + wlid).text(JSON.stringify(wordlist[index].wordArr));
+					$("#wordcnt_" + wlid).text(wordlist[index].count);
+
+					data["wordlist"] = JSON.stringify(wordlist);
+					data["userCount"] = JSON.stringify(userCount);
+					data["wordlistbyuser"] = JSON.stringify(wordlistbyuser);
+					data["totalCount"] = totalCount;
+					senddata(data);
+				}//if
+			});//each
+			if(!iscorrect)
+				alert("輸入錯誤或重複了喔");
+		}
+		else{
+			alert("輸入錯誤喔");
+		}
+
+		$("#totalcnt").text(totalCount);
+	});//submit
+
+
+
+});//document
+
+function updateTable(userlist, userCount, wordlistbyuser, wordlist){
+	$.each(userCount, function(index, value){
+		var i = userlist.indexOf(index);
+		$("#usercnt_" + i).text(value);
+	});
+	$.each(wordlistbyuser, function(index, value){
+		var i = userlist.indexOf(index);
+		$("#userword_" + i).text(value);
+	});
+	$.each(wordlist, function(index, value){
+		var wlid = value.id;
+		$("#wordlist_" + wlid).text(JSON.stringify(value.wordArr));
+		$("#wordcnt_" + wlid).text(JSON.stringify(value.count));
+	});
+	$("#totalcnt").text(totalCount);
+}
+
+
+function senddata(data){
+  $.ajax({
+    type: "get",
+    url: "https://script.google.com/macros/s/AKfycbyfvSin70RgAfG0LM2SHKzNTbqnk9faFDg7EhmZSqOKmCORUmU/exec",
+    data: data,
+    dataType: "JSON",
+    success: function (response) {
+      alert('回傳成功！！');
+    }
+  });
+}//
+
+</script>
+</head>
+<body>
+<br />
+<br />
+<div style="width: 80%; margin: 5%">
+	<!-- <form>
+	  <div class="form-group">
+	    <label for="user">發言者：</label>
+	    <select class="form-control" id="user" style="width: 200px">
+	    	<option>請選擇姓名</option>
+	    </select>
+	  </div>
+	  <div class="form-group">
+	  	<div class="row">
+		    <div class="col-auto">
+		      單字：<input type="text" class="form-control mb-2" placeholder="請輸入單字" id="word" style="width: 300px">
+		    </div>
+		    <div class="col-auto">
+		      漢字：<input type="text" class="form-control mb-2" placeholder="請輸入漢字" id="chtword" style="width: 200px">
+		    </div>
+	 	</div>
+	  </div>
+	  <button type="button" class="btn btn-primary" id="submit">送出</button><br /><br />
+	  <label>單字總數：</label><label id="totalcnt">0</label>
+	</form>
+	<br />
+	<br /> -->
+
+	<table class="table table-bordered" id="tbusercnt" >
+	  <thead>
+	    <tr>
+	      <th scope="col" style="width: 200px">Name</th>
+	      <th scope="col" style="width: 50px">Count</th>
+	      <th scope="col">Answer</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	  
+	  </tbody>
+	</table>
+	<br />
+	<br />
+
+	<table class="table table-bordered" id="tbwordlist" >
+	  <thead>
+	    <tr>
+	      <th scope="col" style="width: 200px">字母</th>
+	      <th scope="col">單字</th>
+	      <th scope="col" style="width: 100px">次數</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	  
+	  </tbody>
+	</table>
+</div>
+</body>
+
+</html>
