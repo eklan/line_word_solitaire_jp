@@ -159,6 +159,7 @@ $(document).ready(function(){
 		
 		data = {};
 		var tempwordlist = [];
+		var sortlist = [];
 		// 無法檢測重複順序（但可以過濾重複）
 		// $.each($("[name='word']"), function(index, val){
 		// 	var wordArr = $(this).val().split(",");
@@ -195,6 +196,7 @@ $(document).ready(function(){
 					if(value.search(sendword.charAt(0)) != -1 && $.inArray(sendword, wordArr) == -1){
 						iscorrect = true;
 						totalCount++;
+						sortlist.push(sendword)
 						//update user table
 						userCount[username] = userCount[username] + 1;
 						wordlistbyuser[username].push(sendword);
@@ -225,7 +227,7 @@ $(document).ready(function(){
 			// }
 
 		}//for
-		senddata(data);
+		senddata(data, sortlist);
 		//data[username] = [sendword];
 	});//submit
 
@@ -281,11 +283,14 @@ function updateTable(userlist, userCount, wordlistbyuser, wordlist, totalCount){
 }
 
 
-function senddata(data){
+function senddata(data, sortlist){
   $.ajax({
     type: "get",
     url: "https://script.google.com/macros/s/AKfycbwmnwqNPKeBNwEYVAgOggZ54DmeND8TlzA6Ha9b/exec",
-    data: {"addlist":JSON.stringify(data)},
+    data: {
+    		"addlist":JSON.stringify(data),
+    		"sortlist":JSON.stringify(sortlist)
+    	  },
     dataType: "JSON",
     success: function (response) {
       alert('回傳成功！！');
