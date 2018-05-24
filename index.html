@@ -15,10 +15,6 @@ var totalCount = 0;
 
 $(document).ready(function(){
 
-	// var Days = 2; //此 cookie 将被保存 2 天
- //    var exp  = new Date();    //new Date("December 31, 9998");
- //    exp.setTime(exp.getTime() + Days*24*60*60*1000);
-	// document.cookie = "wordlist=1;expires=" + exp.toGMTString();
 
 	var userlist = ["Eklan@萩","阿巧","大頭狗","実(´・ω・`)","陳小艾","Booli","Chang Ламм","ChingZ","Devon Chen","Erin アキ","Evan よう","Kimi Kuo","KIRA","Kris.H","Maddie","Spider","5417","宥蓉"]
 
@@ -46,19 +42,23 @@ $(document).ready(function(){
 		var entrylength = data.feed.entry.length;
 		var entryArr = data.feed.entry;
 		var username = "";	//current user
-		for(var i = 0 ; i<entrylength ; i++){	//every row\
+		for(var i = 0 ; i<entrylength ; i++){	//every row
 			if(entryArr[i].gsx$namecountwords.$t != ""){
 				username = entryArr[i].gsx$namecountwords.$t;
 			}
 			$.each(entryArr[i], function(index, value){	//every col
 				if(index.search("gsx") != -1 && index != "gsx$namecountwords"){
 					var word = value.$t;
-					userCount[username] = userCount[username] + 1;
-					wordlistbyuser[username].push("【" + word + "】");
-
+					//wordlist
 					$.each(kanaArr, function(kanaid, kanaval) {
 						var wordArr = wordlist[kanaid].wordArr;
+						//日文開頭且不重複
 						if(kanaval.search(word.charAt(0)) != -1 && $.inArray(word, wordArr) == -1){	
+							//user count
+							userCount[username] = userCount[username] + 1;
+							//user words
+							wordlistbyuser[username].push("【" + word + "】");
+
 							wordlist[kanaid].wordArr.push("【" + word + "】");
 							wordlist[kanaid].count++;
 						}
@@ -107,48 +107,73 @@ $(document).ready(function(){
 
 	var data = {};
 	$("#submit").click(function(){
-		var username = $("#user").val();
-		var sendword = $("#word").val();
-		if($("#chtword").val() != "")
-			sendword = sendword + "(" + $("#chtword").val() + ")";
-		var userid = userlist.indexOf(username);
-		if(username != "" && userid !=-1 && sendword != ""){
-			var iscorrect = false;
-			$.each(kanaArr, function(index, value) {
-				var wordArr = wordlist[index].wordArr;
-				if(value.search(sendword.charAt(0)) != -1 && $.inArray(sendword, wordArr)){
-					iscorrect = true;
-					totalCount++;
-					//update user table
-					userCount[username] = userCount[username] + 1;
-					wordlistbyuser[username].push(sendword);
-					$("#usercnt_" + userid).text(userCount[username]);
-					$("#userword_" + userid).text(JSON.stringify(wordlistbyuser[username]));
-					//update word table
-					wordlist[index].wordArr.push(sendword);
-					wordlist[index].count++;
-					var wlid = wordlist[index].id;
-					$("#wordlist_" + wlid).text(JSON.stringify(wordlist[index].wordArr));
-					$("#wordcnt_" + wlid).text(wordlist[index].count);
+		// var username = $("#user").val();
+		// var sendword = $("#word").val();
+		// if($("#chtword").val() != "")
+		// 	sendword = sendword + "(" + $("#chtword").val() + ")";
+		// var userid = userlist.indexOf(username);
+		// if(username != "" && userid !=-1 && sendword != ""){
+		// 	var iscorrect = false;
+		// 	$.each(kanaArr, function(index, value) {
+		// 		var wordArr = wordlist[index].wordArr;
+		// 		if(value.search(sendword.charAt(0)) != -1 && $.inArray(sendword, wordArr)){
+		// 			iscorrect = true;
+		// 			totalCount++;
+		// 			//update user table
+		// 			userCount[username] = userCount[username] + 1;
+		// 			wordlistbyuser[username].push(sendword);
+		// 			$("#usercnt_" + userid).text(userCount[username]);
+		// 			$("#userword_" + userid).text(JSON.stringify(wordlistbyuser[username]));
+		// 			//update word table
+		// 			wordlist[index].wordArr.push(sendword);
+		// 			wordlist[index].count++;
+		// 			var wlid = wordlist[index].id;
+		// 			$("#wordlist_" + wlid).text(JSON.stringify(wordlist[index].wordArr));
+		// 			$("#wordcnt_" + wlid).text(wordlist[index].count);
 
-					data["wordlist"] = JSON.stringify(wordlist);
-					data["userCount"] = JSON.stringify(userCount);
-					data["wordlistbyuser"] = JSON.stringify(wordlistbyuser);
-					data["totalCount"] = totalCount;
-					senddata(data);
-				}//if
-			});//each
-			if(!iscorrect)
-				alert("輸入錯誤或重複了喔");
-		}
-		else{
-			alert("輸入錯誤喔");
-		}
+		// 			data["wordlist"] = JSON.stringify(wordlist);
+		// 			data["userCount"] = JSON.stringify(userCount);
+		// 			data["wordlistbyuser"] = JSON.stringify(wordlistbyuser);
+		// 			data["totalCount"] = totalCount;
+		// 			senddata(data);
+		// 		}//if
+		// 	});//each
+		// 	if(!iscorrect)
+		// 		alert("輸入錯誤或重複了喔");
+		// }
+		// else{
+		// 	alert("輸入錯誤喔");
+		// }
 
-		$("#totalcnt").text(totalCount);
+		// $("#totalcnt").text(totalCount);
+		// 
+		
+		// 無法檢測重複順序（但可以過濾重複）
+		// var tempwordlist = [];
+		// $.each($("[name='word']"), function(index, val){
+		// 	var wordArr = $(this).val().split(",");
+		// 	for(var word in wordArr){
+		// 		if($.inArray(wordArr[word], tempwordlist) == -1)
+		// 			tempwordlist.push(wordArr[word].trim());
+		// 		else{
+		// 			$(this).val().replace(wordArr[word], "");
+		// 		}
+		// 	}
+		// });
+		// $.each($("[name='user']"), function(index, val){
+		// 	var username = $("[name='user']")[index].value;
+		// 	data[username] = data[username] == undefined ? [] : data[username];
+		// 	var addArr = $("[name='word']")[index].value.split(",");
+		// 	for(var word in addArr){
+		// 		if(addArr[word] != "" && $.inArray(addArr[word], data[username]) == -1)
+		// 			data[username].push(addArr[word].trim());
+		// 	}			
+		// });
 	});//submit
 
-
+	$("#add").click(function(){
+		$("#divData").append($("#divAdd").clone());
+	});
 
 });//document
 
@@ -163,7 +188,8 @@ function updateTable(userlist, userCount, wordlistbyuser, wordlist){
 	});
 	$.each(wordlist, function(index, value){
 		var wlid = value.id;
-		$("#wordlist_" + wlid).text(JSON.stringify(value.wordArr));
+		var strjson = JSON.stringify(value.wordArr);
+		$("#wordlist_" + wlid).text(strjson.replace(/[\[\]\"]/g,"").replace(/\\n/g," "));
 		$("#wordcnt_" + wlid).text(JSON.stringify(value.count));
 	});
 	$("#totalcnt").text(totalCount);
@@ -189,23 +215,37 @@ function senddata(data){
 <br />
 <div style="width: 80%; margin: 5%">
 	<form>
-	  <!-- <div class="form-group">
+	  <div class="form-group">
 	    <label for="user">發言者：</label>
 	    <select class="form-control" id="user" style="width: 200px">
 	    	<option>請選擇姓名</option>
 	    </select>
 	  </div>
-	  <div class="form-group">
-	  	<div class="row">
-		    <div class="col-auto">
-		      單字：<input type="text" class="form-control mb-2" placeholder="請輸入單字" id="word" style="width: 300px">
+
+	  <div class="col-auto">
+		      單字：<input type="text" class="form-control mb-2" placeholder="請輸入單字" id="word" style="width: 50em">
 		    </div>
-		    <div class="col-auto">
+		    <!-- <div class="col-auto">
 		      漢字：<input type="text" class="form-control mb-2" placeholder="請輸入漢字" id="chtword" style="width: 200px">
+		    </div> -->
+
+	  <!-- <div class="form-inline" id="divData">
+	  	<div class="row" id="divAdd">
+	  		<div class="col-auto">
+	  			發言者：
+		  		<select class="form-control" name="user" style="width: 10em" id="user">
+			    	<option>請選擇姓名</option>
+			    </select>
+			</div>
+	  		<div class="col-auto">
+		      單字：<input type="text" class="form-control mb-2" placeholder="請輸入單字" name="word" style="width: 50em">
 		    </div>
 	 	</div>
 	  </div>
-	  <button type="button" class="btn btn-primary" id="submit">送出</button><br /><br /> -->
+		<br /><br />
+	  
+	  <button type="button" class="btn btn-primary" id="add">加人</button> -->
+	  <button type="button" class="btn btn-primary" id="submit">送出</button><br /><br />
 	  <label>單字總數：</label><label id="totalcnt">0</label>
 	</form>
 	<br />
