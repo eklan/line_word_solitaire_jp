@@ -13,13 +13,14 @@ var userCount = {};
 var wordlistbyuser = {};
 var totalCount = 0;
 
+
+var userlist = ["Eklan@萩","阿巧","大頭狗","実(´・ω・`)","陳小艾","Booli","Chang Ламм","ChingZ","Devon Chen","Erin アキ","Evan よう","Kimi Kuo","KIRA","Kris.H","Maddie","Spider","5417","宥蓉"]
+
+var kanaArr = {"ア":"アあ","イ":"イい","ウ":"ウう","エ":"エえ","オ":"オお","カ":"カガかが","キ":"キギきぎ","ク":"クグくぐ","ケ":"ケゲけげ","コ":"コゴこご","サ":"サザさざ","シ":"シジしじ","ス":"スズすず","セ":"セゼせぜ","ソ":"ソゾそぞ","タ":"タダただ","チ":"チヂちぢ","ツ":"ツヅつづ","テ":"テデてで","ト":"トドとど","ナ":"ナな","ニ":"ニに","ヌ":"ヌぬ","ネ":"ネね","ノ":"ノの","ハ":"ハパバはぱば","ヒ":"ヒピビひぴび","フ":"フプブふぷぶ","ヘ":"ヘペベへぺべ","ホ":"ホポボほぽぼ","マ":"マま","ミ":"ミみ","ム":"ムむ","メ":"メめ","モ":"モも","ヤ":"ヤや","ユ":"ユゆ","ヨ":"ヨよ","ラ":"ラら","リ":"リり","ル":"ルる","レ":"レれ","ロ":"ロろ","ワ":"ワわ","ヲ":"ヲを","ン":"ンん"};
+
+
 $(document).ready(function(){
 
-
-	var userlist = ["Eklan@萩","阿巧","大頭狗","実(´・ω・`)","陳小艾","Booli","Chang Ламм","ChingZ","Devon Chen","Erin アキ","Evan よう","Kimi Kuo","KIRA","Kris.H","Maddie","Spider","5417","宥蓉"]
-
-	var kanaArr = {"ア":"アあ","イ":"イい","ウ":"ウう","エ":"エえ","オ":"オお","カ":"カガかが","キ":"キギきぎ","ク":"クグくぐ","ケ":"ケゲけげ","コ":"コゴこご","サ":"サザさざ","シ":"シジしじ","ス":"スズすず","セ":"セゼせぜ","ソ":"ソゾそぞ","タ":"タダただ","チ":"チヂちぢ","ツ":"ツヅつづ","テ":"テデてで","ト":"トドとど","ナ":"ナな","ニ":"ニに","ヌ":"ヌぬ","ネ":"ネね","ノ":"ノの","ハ":"ハパバはぱば","ヒ":"ヒピビひぴび","フ":"フプブふぷぶ","ヘ":"ヘペベへぺべ","ホ":"ホポボほぽぼ","マ":"マま","ミ":"ミみ","ム":"ムむ","メ":"メめ","モ":"モも","ヤ":"ヤや","ユ":"ユゆ","ヨ":"ヨよ","ラ":"ラら","リ":"リり","ル":"ルる","レ":"レれ","ロ":"ロろ","ワ":"ワわ","ヲ":"ヲを","ン":"ンん"};
-	
 	
 
 	// //get coockie
@@ -38,40 +39,47 @@ $(document).ready(function(){
 		//updateTable(userlist, userCount, wordlistbyuser, wordlist);
     });
 
-	$.getJSON('https://spreadsheets.google.com/feeds/list/1gVL2c3WZq9RuAPGLQPu4Mf0UOh-eKgdtOvxqhhx7_7w/od6/public/values?alt=json', function (data){
-		var entrylength = data.feed.entry.length;
-		var entryArr = data.feed.entry;
-		var username = "";	//current user
-		for(var i = 0 ; i<entrylength ; i++){	//every row
-			if(entryArr[i].gsx$namecountwords.$t != ""){
-				username = entryArr[i].gsx$namecountwords.$t;
-			}
-			$.each(entryArr[i], function(index, value){	//every col
-				if(index.search("gsx") != -1 && index != "gsx$namecountwords"){
-					var word = value.$t;
-					//wordlist
-					$.each(kanaArr, function(kanaid, kanaval) {
-						var wordArr = wordlist[kanaid].wordArr;
-						//日文開頭且不重複
-						if(kanaval.search(word.charAt(0)) != -1 && $.inArray(word, wordArr) == -1){	
-							//user count
-							userCount[username] = userCount[username] + 1;
-							//user words
-							wordlistbyuser[username].push("【" + word + "】");
-
-							wordlist[kanaid].wordArr.push("【" + word + "】");
-							wordlist[kanaid].count++;
-						}
-					});
-					
-					totalCount++;
+	
+	var reloadtable = function(){
+		$.getJSON('https://spreadsheets.google.com/feeds/list/1gVL2c3WZq9RuAPGLQPu4Mf0UOh-eKgdtOvxqhhx7_7w/od6/public/values?alt=json', function (data){
+			clearTable();
+			var entrylength = data.feed.entry.length;
+			var entryArr = data.feed.entry;
+			var username = "";	//current user
+			for(var i = 0 ; i<entrylength ; i++){	//every row
+				if(entryArr[i].gsx$namecountwords.$t != ""){
+					username = entryArr[i].gsx$namecountwords.$t;
 				}
-			});
-		}
-		updateTable(userlist, userCount, wordlistbyuser, wordlist, totalCount);
-    });
+				$.each(entryArr[i], function(index, value){	//every col
+					if(index.search("gsx") != -1 && index != "gsx$namecountwords"){
+						var word = value.$t;
+						//wordlist
+						$.each(kanaArr, function(kanaid, kanaval) {
+							var wordArr = wordlist[kanaid].wordArr;
+							//日文開頭且不重複
+							if(kanaval.search(word.charAt(0)) != -1 && $.inArray(word, wordArr) == -1){	
+								//user count
+								userCount[username] = userCount[username] + 1;
+								//user words
+								wordlistbyuser[username].push(word.replace(/\n/g, " "));
 
+								wordlist[kanaid].wordArr.push(word.replace(/\n/g, " "));
+								wordlist[kanaid].count++;
+							}
+						});
+						
+						totalCount++;
+					}
+				});
+			}
+			updateTable(userlist, userCount, wordlistbyuser, wordlist, totalCount);
 
+	    });
+	};
+
+	
+	setInterval(reloadtable, 1000);
+	
     
 	var tablecolor = ["primary","success","danger","warning","info","primary","success","danger","warning","info"];
 
@@ -83,7 +91,7 @@ $(document).ready(function(){
 							.append("<td id='usercnt_" + i + "'>0</td>") //count
 							.append("<td id='userword_"+ i + "'></td>")	//word
 							);
-		$("#user").append($("<option></option>").val(userlist[i]).text(userlist[i]));
+		$("#user_1").append($("<option></option>").val(userlist[i]).text(userlist[i]));
 	}
 
 	var wordlistid = 0;
@@ -148,8 +156,10 @@ $(document).ready(function(){
 		// $("#totalcnt").text(totalCount);
 		// 
 		
+		
+		data = {};
+		var tempwordlist = [];
 		// 無法檢測重複順序（但可以過濾重複）
-		// var tempwordlist = [];
 		// $.each($("[name='word']"), function(index, val){
 		// 	var wordArr = $(this).val().split(",");
 		// 	for(var word in wordArr){
@@ -160,6 +170,7 @@ $(document).ready(function(){
 		// 		}
 		// 	}
 		// });
+		
 		// $.each($("[name='user']"), function(index, val){
 		// 	var username = $("[name='user']")[index].value;
 		// 	data[username] = data[username] == undefined ? [] : data[username];
@@ -167,40 +178,113 @@ $(document).ready(function(){
 		// 	for(var word in addArr){
 		// 		if(addArr[word] != "" && $.inArray(addArr[word], data[username]) == -1)
 		// 			data[username].push(addArr[word].trim());
-		// 	}			
+		// 	}	
 		// });
+
+		for(var i = 0 ; i<$("[name='word']").length ; i++){
+			var itemno = i + 1;
+			var username = $("#user_" + itemno).val();
+			var sendword = $("#word_" + itemno).val();
+			var userid = userlist.indexOf(username);
+			if(username != "" && username != "#" && sendword != "" && $.inArray(sendword, tempwordlist) == -1){
+				tempwordlist.push(sendword.trim());
+				var iscorrect = false;
+				$.each(kanaArr, function(index, value) {
+					var wordArr = wordlist[index].wordArr;
+					if(value.search(sendword.charAt(0)) != -1 && $.inArray(sendword, wordArr) == -1){
+						iscorrect = true;
+						totalCount++;
+						//update user table
+						userCount[username] = userCount[username] + 1;
+						wordlistbyuser[username].push(sendword);
+						$("#usercnt_" + userid).text(userCount[username]);
+						$("#userword_" + userid).text(JSON.stringify(wordlistbyuser[username]));
+						//update word table
+						wordlist[index].wordArr.push(sendword);
+						wordlist[index].count++;
+						var wlid = wordlist[index].id;
+						$("#wordlist_" + wlid).text(JSON.stringify(wordlist[index].wordArr));
+						$("#wordcnt_" + wlid).text(wordlist[index].count);
+
+						data[username] = data[username] == undefined ? [] : data[username];
+						data[username].push(sendword);
+						
+					}//if
+				});//each
+				if(!iscorrect){
+					alert("輸入錯誤或重複了喔");
+					return;
+				}
+			}//if
+
+			// if($.inArray(word, tempwordlist) == -1 && $("#user_" + itemno).val() != "#"){
+			// 	tempwordlist.push(word.trim());
+			// 	data[username] = data[username] == undefined ? [] : data[username];
+			// 	data[username].push(word);
+			// }
+
+		}//for
+		senddata(data);
+		//data[username] = [sendword];
 	});//submit
 
+	var currentNo = 0;
 	$("#add").click(function(){
-		$("#divData").append($("#divAdd").clone());
+		var lastitem = $("[name='no']")[($("[name='no']").length) -1];
+		currentNo = parseInt($(lastitem).text());
+		var newno = currentNo + 1;
+		var newItem = $("#divAdd").clone();
+		$(newItem).find("[name='no']").text(newno);
+		$(newItem).find("[name='user']").attr("id", "user_" + newno).val("#");
+		$(newItem).find("[name='word']").attr("id", "word_" + newno).text("").val("");
+		$("#divData").append(newItem);
+		currentNo = newno;
 	});
 
 });//document
 
-function updateTable(userlist, userCount, wordlistbyuser, wordlist){
+function clearTable(){
+
+	wordlist = {};
+	userCount = {};
+	wordlistbyuser = {};
+	totalCount = 0;
+	var wordlistid = 0;
+	$.each(kanaArr, function(index, value) {
+		wordlist[index] = {"id":wordlistid, "wordArr":[], "count":0};
+		wordlistid++;
+	});
+	for(var i = 0 ; i < userlist.length ; i++){
+		userCount[userlist[i]] = 0;	
+		wordlistbyuser[userlist[i]] = [];
+	}
+
+}
+
+function updateTable(userlist, userCount, wordlistbyuser, wordlist, totalCount){
 	$.each(userCount, function(index, value){
 		var i = userlist.indexOf(index);
 		$("#usercnt_" + i).text(value);
 	});
 	$.each(wordlistbyuser, function(index, value){
 		var i = userlist.indexOf(index);
-		$("#userword_" + i).text(value);
+		$("#userword_" + i).text("【" + value.toString().replace(/,/g, "】,【") + "】");
 	});
 	$.each(wordlist, function(index, value){
 		var wlid = value.id;
-		var strjson = JSON.stringify(value.wordArr);
-		$("#wordlist_" + wlid).text(strjson.replace(/[\[\]\"]/g,"").replace(/\\n/g," "));
+		var strjson = value.wordArr.toString();
+		$("#wordlist_" + wlid).text("【" + strjson.replace(/,/g, "】,【") + "】");
 		$("#wordcnt_" + wlid).text(JSON.stringify(value.count));
 	});
-	$("#totalcnt").text(totalCount);
+	$("#totalcnt").text(totalCount + " / " + new Date());
 }
 
 
 function senddata(data){
   $.ajax({
     type: "get",
-    url: "https://script.google.com/macros/s/AKfycbyfvSin70RgAfG0LM2SHKzNTbqnk9faFDg7EhmZSqOKmCORUmU/exec",
-    data: data,
+    url: "https://script.google.com/macros/s/AKfycbwmnwqNPKeBNwEYVAgOggZ54DmeND8TlzA6Ha9b/exec",
+    data: {"addlist":JSON.stringify(data)},
     dataType: "JSON",
     success: function (response) {
       alert('回傳成功！！');
@@ -214,37 +298,40 @@ function senddata(data){
 <br />
 <br />
 <div style="width: 80%; margin: 5%">
-	<form>
-	  <div class="form-group">
+	<!-- <div class="form-group">
 	    <label for="user">發言者：</label>
-	    <select class="form-control" id="user" style="width: 200px">
+	    <select class="form-control" id="user" style="width: 10em">
 	    	<option>請選擇姓名</option>
 	    </select>
 	  </div>
-
-	  <div class="col-auto">
-		      單字：<input type="text" class="form-control mb-2" placeholder="請輸入單字" id="word" style="width: 50em">
-		    </div>
-		    <!-- <div class="col-auto">
-		      漢字：<input type="text" class="form-control mb-2" placeholder="請輸入漢字" id="chtword" style="width: 200px">
-		    </div> -->
-
-	  <!-- <div class="form-inline" id="divData">
+	  <div class="form-group">
+	  	<div class="row">
+		    <div class="col-auto">
+		      單字：<input type="text" class="form-control mb-2" placeholder="請輸入單字" id="word" >
+		    </di>
+	 	</div>
+	  </div> -->
+	  <div class="form-group" id="divData">
 	  	<div class="row" id="divAdd">
 	  		<div class="col-auto">
-	  			發言者：
-		  		<select class="form-control" name="user" style="width: 10em" id="user">
-			    	<option>請選擇姓名</option>
-			    </select>
-			</div>
+	  			<label name="no">1</label>
+	  		</div>
 	  		<div class="col-auto">
-		      單字：<input type="text" class="form-control mb-2" placeholder="請輸入單字" name="word" style="width: 50em">
+		      <input type="text" class="form-control" placeholder="請輸入單字" name="word" id="word_1">
 		    </div>
+		    <div class="col-auto">
+		  		<select class="form-control" name="user" style="width: 10em" id="user_1">
+			    	<option value="#">請選擇姓名</option>
+			    </select>
+			    <br />
+			</div>
+			
 	 	</div>
+		
 	  </div>
-		<br /><br />
+		<br />
 	  
-	  <button type="button" class="btn btn-primary" id="add">加人</button> -->
+	  <button type="button" class="btn btn-primary" id="add">加人</button>
 	  <button type="button" class="btn btn-primary" id="submit">送出</button><br /><br />
 	  <label>單字總數：</label><label id="totalcnt">0</label>
 	</form>
