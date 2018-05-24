@@ -61,9 +61,9 @@ $(document).ready(function(){
 								//user count
 								userCount[username] = userCount[username] + 1;
 								//user words
-								wordlistbyuser[username].push(word.trim().replace(/\n/g, " "));
+								wordlistbyuser[username].push(word.trim().replace(/\s+/g, " "));
 
-								wordlist[kanaid].wordArr.push(word.trim().replace(/\n/g, " "));
+								wordlist[kanaid].wordArr.push(word.trim().replace(/\s+/g, " "));
 								wordlist[kanaid].count++;
 							}
 						});
@@ -159,7 +159,7 @@ $(document).ready(function(){
 		
 		data = {};
 		var tempwordlist = [];
-		var sortlist = [];
+		//var sortlist = [];
 		// 無法檢測重複順序（但可以過濾重複）
 		// $.each($("[name='word']"), function(index, val){
 		// 	var wordArr = $(this).val().split(",");
@@ -187,35 +187,40 @@ $(document).ready(function(){
 			var username = $("#user_" + itemno).val();
 			var sendword = $("#word_" + itemno).val();
 			var userid = userlist.indexOf(username);
-			if(username != "" && username != "#" && sendword != "" && $.inArray(sendword, tempwordlist) == -1){
-				tempwordlist.push(sendword.trim());
+			if(username != "" && username != "#" && sendword != ""){
 				var iscorrect = false;
 				$.each(kanaArr, function(index, value) {
-					var wordArr = wordlist[index].wordArr;
-					sendword = sendword.trim().replace(/\s/g, " ");
-					if(value.search(sendword.charAt(0)) != -1 && $.inArray(sendword, wordArr) == -1){
+					//currect and no repeat
+					if(value.search(sendword.charAt(0)) != -1 && $.inArray(sendword, tempwordlist) == -1){
+						var wordArr = wordlist[index].wordArr;
+						sendword = sendword.trim().replace(/\s+/g, " ");
 						iscorrect = true;
-						totalCount++;
-						sortlist.push(sendword)
-						//update user table
-						userCount[username] = userCount[username] + 1;
-						wordlistbyuser[username].push(sendword);
-						$("#usercnt_" + userid).text(userCount[username]);
-						$("#userword_" + userid).text(JSON.stringify(wordlistbyuser[username]));
-						//update word table
-						wordlist[index].wordArr.push(sendword);
-						wordlist[index].count++;
-						var wlid = wordlist[index].id;
-						$("#wordlist_" + wlid).text(JSON.stringify(wordlist[index].wordArr));
-						$("#wordcnt_" + wlid).text(wordlist[index].count);
+						tempwordlist.push(sendword.trim());
+						if($.inArray(sendword, wordArr) == -1){
+							totalCount++;
+							//sortlist.push(sendword)
+							//update user table
+							userCount[username] = userCount[username] + 1;
+							wordlistbyuser[username].push(sendword);
+							$("#usercnt_" + userid).text(userCount[username]);
+							$("#userword_" + userid).text(JSON.stringify(wordlistbyuser[username]));
+							//update word table
+							wordlist[index].wordArr.push(sendword);
+							wordlist[index].count++;
+							var wlid = wordlist[index].id;
+							$("#wordlist_" + wlid).text(JSON.stringify(wordlist[index].wordArr));
+							$("#wordcnt_" + wlid).text(wordlist[index].count);
 
-						data[username] = data[username] == undefined ? [] : data[username];
-						data[username].push(sendword);
-						
-					}//if
+							data[username] = data[username] == undefined ? [] : data[username];
+							data[username].push(sendword);
+							
+						}//if
+					}
+					
+					
 				});//each
 				if(!iscorrect){
-					alert("輸入錯誤或重複了喔");
+					alert("輸入錯誤或輸入重複了喔");
 					return;
 				}
 			}//if
@@ -227,7 +232,7 @@ $(document).ready(function(){
 			// }
 
 		}//for
-		senddata(data, sortlist);
+		senddata(data, tempwordlist);
 		//data[username] = [sendword];
 	});//submit
 
