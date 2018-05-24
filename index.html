@@ -61,9 +61,9 @@ $(document).ready(function(){
 								//user count
 								userCount[username] = userCount[username] + 1;
 								//user words
-								wordlistbyuser[username].push(word.replace(/\n/g, " "));
+								wordlistbyuser[username].push(word.trim().replace(/\n/g, " "));
 
-								wordlist[kanaid].wordArr.push(word.replace(/\n/g, " "));
+								wordlist[kanaid].wordArr.push(word.trim().replace(/\n/g, " "));
 								wordlist[kanaid].count++;
 							}
 						});
@@ -191,6 +191,7 @@ $(document).ready(function(){
 				var iscorrect = false;
 				$.each(kanaArr, function(index, value) {
 					var wordArr = wordlist[index].wordArr;
+					sendword = sendword.trim().replace(/\s/g, " ");
 					if(value.search(sendword.charAt(0)) != -1 && $.inArray(sendword, wordArr) == -1){
 						iscorrect = true;
 						totalCount++;
