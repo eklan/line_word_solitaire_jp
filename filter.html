@@ -14,8 +14,10 @@ $(document).ready(function(){
 	$.getJSON('https://spreadsheets.google.com/feeds/list/1gVL2c3WZq9RuAPGLQPu4Mf0UOh-eKgdtOvxqhhx7_7w/od6/public/values?alt=json', function (data){
 		var entryArr = data.feed.entry;
 		var json_content = entryArr[entryArr.length-1].gsx$namecountwords.$t;
-		var content = JSON.parse(json_content);
-		showContent(content);
+		if(json_content != ""){
+			var content = JSON.parse(json_content);
+			showContent(content);
+		}
 	});
 });//document
 
